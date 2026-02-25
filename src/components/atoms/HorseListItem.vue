@@ -1,4 +1,10 @@
 <script setup>
+/**
+ * Single horse row item shown inside the sidebar list.
+ *
+ * @props
+ * - horse: horse display model (name, hex, condition).
+ */
 defineProps({
   horse: {
     type: Object,

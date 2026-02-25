@@ -1,7 +1,15 @@
 <script setup>
+/**
+ * Main race board that renders live lane progress for the active round.
+ *
+ * @state
+ * - currentRound/currentRoundDistance: active round metadata for UI.
+ * - laneStates: live lane progress from the app store engine.
+ * - isRunning/isCountdownActive/countdownValue: runtime status flags.
+ */
 import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import RaceLaneRow from './atoms/RaceLaneRow.vue'
+import RaceLaneRow from './RaceLaneRow.vue'
 import { useAppStore } from '../stores/appStore'
 
 const appStore = useAppStore()
@@ -17,14 +25,6 @@ const {
 const currentRound = computed(() => raceSchedule.value.rounds[currentRoundIndex.value] ?? null)
 const currentRoundDistance = computed(() => currentRound.value?.distance ?? 0)
 const laneStates = computed(() => currentRoundLaneStates.value)
-
-const startRace = () => {
-	appStore.startRace()
-}
-
-defineExpose({
-  startRace
-})
 
 onMounted(() => {
 	appStore.ensureRaceSetup()

@@ -1,5 +1,12 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+/**
+ * Main gameplay page that controls race start/pause and live race layout.
+ *
+ * @state
+ * - isRunning/isPaused/isCountdownActive: race control status from store.
+ * - startButtonLabel/pauseButtonLabel/canTogglePause: UI control state.
+ */
+import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import RaceAnimation from '../components/RaceAnimation.vue'
@@ -7,7 +14,6 @@ import RaceProgram from '../components/RaceProgram.vue'
 import CustomButton from '../components/atoms/CustomButton.vue'
 import { useAppStore } from '../stores/appStore'
 
-const raceAnimationRef = ref(null)
 const appStore = useAppStore()
 const router = useRouter()
 const { isRunning, isPaused, isCountdownActive, raceCompleted } = storeToRefs(appStore)
@@ -23,7 +29,7 @@ const canTogglePause = computed(
 )
 
 const startRace = () => {
-  raceAnimationRef.value?.startRace()
+  appStore.startRace()
 }
 
 const togglePause = () => {
@@ -53,7 +59,7 @@ watch(raceCompleted, (isCompleted) => {
           </CustomButton>
         </div>
 
-        <RaceAnimation ref="raceAnimationRef" />
+        <RaceAnimation />
       </div>
 
       <RaceProgram />
@@ -63,8 +69,7 @@ watch(raceCompleted, (isCompleted) => {
 
 <style scoped>
 .game-page {
-  height: 100vh;
-  margin: -24px;
+  min-height: calc(100vh - 48px);
 }
 
 .action-row {
@@ -76,6 +81,7 @@ watch(raceCompleted, (isCompleted) => {
 .game-page-layout {
   height: 100%;
   display: flex;
+  gap: 16px;
   align-items: stretch;
   justify-content: center;
 }
@@ -83,14 +89,12 @@ watch(raceCompleted, (isCompleted) => {
 .race-area {
   flex: 1;
   min-width: 0;
-  padding: 16px;
   box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .game-page {
     height: auto;
-    margin: -24px;
   }
 
   .game-page-layout {

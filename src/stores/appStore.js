@@ -1,6 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { HORSE_COLORS } from '../constants/horseColors'
+import {
+  createRaceSchedule,
+  generateHorseListFromColors
+} from '../helpers/raceData'
+import {
+  advanceRoundTick,
+  createRoundLaneStates,
+  finalizeRoundWithPlacements,
+  resetScheduleRoundResults
+} from '../helpers/raceEngine'
 
 const ROUND_DISTANCES = [1200, 1400, 1600, 1800, 2000, 2200]
 const HORSES_PER_ROUND = 10
@@ -9,12 +19,14 @@ const NEXT_ROUND_DELAY_MS = 1500
 const DEFAULT_ROUND_INDEX = 0
 
 export const useAppStore = defineStore('app', () => {
+  // Main race data used across pages.
   const horses = ref([])
   const raceSchedule = ref({
     rounds: [],
     totalRounds: ROUND_DISTANCES.length,
     generatedAt: null
   })
+  // Live race status while a race is running.
   const currentRoundIndex = ref(DEFAULT_ROUND_INDEX)
   const currentRoundLaneStates = ref([])
   const isRunning = ref(false)
@@ -27,48 +39,12 @@ export const useAppStore = defineStore('app', () => {
   let countdownTimerId = null
   let roundDelayTimerId = null
 
-  const generateRandomCondition = () => {
-    return Math.floor(Math.random() * 51) + 50
-  }
-
-  const shuffleColors = () => {
-    const pool = [...HORSE_COLORS]
-
-    for (let i = pool.length - 1; i > 0; i -= 1) {
-      const randomIndex = Math.floor(Math.random() * (i + 1))
-      const temp = pool[i]
-      pool[i] = pool[randomIndex]
-      pool[randomIndex] = temp
-    }
-
-    return pool
-  }
-
+  // Build a fresh horse pool from predefined colors.
   const generateHorseList = () => {
-    const randomColors = shuffleColors()
-
-    horses.value = randomColors.map((color, index) => ({
-      id: `${Date.now()}-${index}`,
-      name: `Horse ${index + 1}`,
-      color: color.name,
-      hex: color.hex,
-      condition: generateRandomCondition()
-    }))
+    horses.value = generateHorseListFromColors(HORSE_COLORS)
   }
 
-  const pickRandomHorses = () => {
-    const pool = [...horses.value]
-
-    for (let i = pool.length - 1; i > 0; i -= 1) {
-      const randomIndex = Math.floor(Math.random() * (i + 1))
-      const temp = pool[i]
-      pool[i] = pool[randomIndex]
-      pool[randomIndex] = temp
-    }
-
-    return pool.slice(0, Math.min(HORSES_PER_ROUND, pool.length))
-  }
-
+  // Small helpers to safely clear active timers.
   const clearRaceTimer = () => {
     if (raceTimerId) {
       clearInterval(raceTimerId)
@@ -96,39 +72,36 @@ export const useAppStore = defineStore('app', () => {
     clearRoundDelayTimer()
   }
 
-  const prepareRoundLanes = (roundIndex = currentRoundIndex.value) => {
-    const round = raceSchedule.value.rounds[roundIndex]
-    if (!round) {
-      currentRoundLaneStates.value = []
-      return
-    }
+  // Reset runtime flags between flows; optionally clear "race complete".
+  const resetRaceRuntimeState = ({ resetCompletion = false } = {}) => {
+    clearAllRaceTimers()
+    isRunning.value = false
+    isPaused.value = false
+    isCountdownActive.value = false
+    countdownValue.value = 3
 
-    currentRoundLaneStates.value = round.horses.map((horse) => ({
-      horse,
-      distanceCovered: 0,
-      progress: 0,
-      finishPosition: null
-    }))
+    if (resetCompletion) {
+      raceCompleted.value = false
+    }
   }
 
+  // Initialize lane progress for a specific round.
+  const prepareRoundLanes = (roundIndex = currentRoundIndex.value) => {
+    const round = raceSchedule.value.rounds[roundIndex]
+    currentRoundLaneStates.value = createRoundLaneStates(round)
+  }
+
+  // Write lane finish positions back into schedule results.
   const finalizeRoundResults = () => {
     const round = raceSchedule.value.rounds[currentRoundIndex.value]
     if (!round) {
       return
     }
 
-    const finishPositionByHorseId = new Map(
-      currentRoundLaneStates.value.map((lane) => [lane.horse.id, lane.finishPosition])
+    const updatedRound = finalizeRoundWithPlacements(
+      round,
+      currentRoundLaneStates.value
     )
-
-    const updatedRound = {
-      ...round,
-      isCompleted: true,
-      horses: round.horses.map((horse) => ({
-        ...horse,
-        finishPosition: finishPositionByHorseId.get(horse.id) ?? null
-      }))
-    }
 
     const updatedRounds = [...raceSchedule.value.rounds]
     updatedRounds[currentRoundIndex.value] = updatedRound
@@ -138,6 +111,7 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  // Run one simulation tick; finish the round when everyone is done.
   const runRoundTick = () => {
     const round = raceSchedule.value.rounds[currentRoundIndex.value]
     const roundDistance = round?.distance ?? 0
@@ -148,33 +122,11 @@ export const useAppStore = defineStore('app', () => {
       return
     }
 
-    let nextFinishPosition = currentRoundLaneStates.value.filter(
-      (lane) => lane.finishPosition !== null
-    ).length
-
-    currentRoundLaneStates.value = currentRoundLaneStates.value.map((lane) => {
-      const nextDistance = Math.min(
-        lane.distanceCovered + lane.horse.condition,
-        roundDistance
-      )
-      const hasFinished = lane.finishPosition !== null
-      const justFinished = !hasFinished && nextDistance >= roundDistance
-
-      if (justFinished) {
-        nextFinishPosition += 1
-      }
-
-      return {
-        ...lane,
-        distanceCovered: nextDistance,
-        progress: nextDistance / roundDistance,
-        finishPosition: justFinished ? nextFinishPosition : lane.finishPosition
-      }
-    })
-
-    const allFinished = currentRoundLaneStates.value.every(
-      (lane) => lane.progress >= 1
+    const { updatedLaneStates, allFinished } = advanceRoundTick(
+      currentRoundLaneStates.value,
+      roundDistance
     )
+    currentRoundLaneStates.value = updatedLaneStates
 
     if (allFinished) {
       clearRaceTimer()
@@ -185,6 +137,7 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  // Start ticking the current round.
   const startRound = () => {
     if (isRunning.value || isCountdownActive.value) {
       return
@@ -195,6 +148,7 @@ export const useAppStore = defineStore('app', () => {
     raceTimerId = setInterval(runRoundTick, TICK_MS)
   }
 
+  // Wait, show countdown, then move into the next round.
   const scheduleNextRound = () => {
     const hasNextRound =
       currentRoundIndex.value < raceSchedule.value.rounds.length - 1
@@ -228,15 +182,9 @@ export const useAppStore = defineStore('app', () => {
     }, NEXT_ROUND_DELAY_MS)
   }
 
+  // Keep the same round rosters, but clear completion/results.
   const resetRaceProgress = () => {
-    const resetRounds = raceSchedule.value.rounds.map((round) => ({
-      ...round,
-      isCompleted: false,
-      horses: round.horses.map((horse) => ({
-        ...horse,
-        finishPosition: null
-      }))
-    }))
+    const resetRounds = resetScheduleRoundResults(raceSchedule.value.rounds)
 
     raceSchedule.value = {
       ...raceSchedule.value,
@@ -244,29 +192,30 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  // Generate a brand-new race schedule and prepare round 1 lanes.
   const generateRaceSchedule = () => {
     if (!horses.value.length) {
       generateHorseList()
     }
 
-    raceSchedule.value = {
-      rounds: ROUND_DISTANCES.map((distance, index) => ({
-        round: index + 1,
-        distance,
-        isCompleted: false,
-        horses: pickRandomHorses().map((horse) => ({
-          ...horse,
-          finishPosition: null
-        }))
-      })),
-      totalRounds: ROUND_DISTANCES.length,
-      generatedAt: Date.now()
-    }
+    resetRaceRuntimeState({ resetCompletion: true })
+
+    raceSchedule.value = createRaceSchedule({
+      distances: ROUND_DISTANCES,
+      horsesPerRound: HORSES_PER_ROUND,
+      horses: horses.value
+    })
 
     currentRoundIndex.value = DEFAULT_ROUND_INDEX
     prepareRoundLanes(DEFAULT_ROUND_INDEX)
   }
 
+  // Results page uses this to start fresh when going back.
+  const resetResultsAndGenerateRounds = () => {
+    generateRaceSchedule()
+  }
+
+  // Make sure required schedule/lane state exists before actions run.
   const ensureRaceSetup = () => {
     if (!raceSchedule.value.rounds.length) {
       generateRaceSchedule()
@@ -278,14 +227,10 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  // Public entrypoint: start race from round 1.
   const startRace = () => {
     ensureRaceSetup()
-    clearAllRaceTimers()
-    isRunning.value = false
-    isPaused.value = false
-    isCountdownActive.value = false
-    countdownValue.value = 3
-    raceCompleted.value = false
+    resetRaceRuntimeState({ resetCompletion: true })
     currentRoundIndex.value = DEFAULT_ROUND_INDEX
     resetRaceProgress()
     prepareRoundLanes(DEFAULT_ROUND_INDEX)
@@ -293,12 +238,10 @@ export const useAppStore = defineStore('app', () => {
   }
 
   const stopRaceEngine = () => {
-    clearAllRaceTimers()
-    isRunning.value = false
-    isPaused.value = false
-    isCountdownActive.value = false
+    resetRaceRuntimeState()
   }
 
+  // Pause active ticking; countdown flow is controlled separately.
   const pauseRace = () => {
     if (!isRunning.value || isCountdownActive.value) {
       return
@@ -309,6 +252,7 @@ export const useAppStore = defineStore('app', () => {
     isPaused.value = true
   }
 
+  // Resume only if current round still has unfinished lanes.
   const resumeRace = () => {
     if (!isPaused.value || isCountdownActive.value || !currentRoundLaneStates.value.length) {
       return
@@ -338,6 +282,8 @@ export const useAppStore = defineStore('app', () => {
     raceCompleted,
     generateHorseList,
     generateRaceSchedule,
+    resetResultsAndGenerateRounds,
+    resetRaceRuntimeState,
     ensureRaceSetup,
     startRace,
     stopRaceEngine,

@@ -1,4 +1,11 @@
 <script setup>
+/**
+ * Round-by-round program panel with distances and placements.
+ *
+ * @state
+ * - rounds: derived schedule rounds rendered as result tiles.
+ * - actions slot: optional header actions injected by parent pages.
+ */
 import { computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
@@ -15,7 +22,12 @@ onMounted(() => {
 
 <template>
   <div class="race-program">
-    <h2 class="title">Race Program</h2>
+    <div class="program-header">
+      <h2 class="title">Race Program</h2>
+      <div class="program-actions">
+        <slot name="actions" />
+      </div>
+    </div>
     <div class="round-grid">
       <section
         v-for="round in rounds"
@@ -42,7 +54,7 @@ onMounted(() => {
 
 <style scoped>
 .race-program {
-  flex: 0 0 420px;
+  flex: 0 0 280px;
   height: 100vh;
   overflow-y: auto;
   padding: 16px;
@@ -51,9 +63,22 @@ onMounted(() => {
 }
 
 .title {
-  margin: 0 0 16px;
   font-size: 17.6px;
   font-weight: 700;
+}
+
+.program-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.program-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 h2 {

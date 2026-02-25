@@ -1,4 +1,11 @@
 <script setup>
+/**
+ * Reusable styled button with a single consistent visual treatment.
+ *
+ * @props
+ * - type: native button type attribute.
+ * - disabled: disables interaction and applies disabled styles.
+ */
 defineProps({
 	type: {
 		type: String,

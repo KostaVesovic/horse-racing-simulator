@@ -1,4 +1,10 @@
 <script setup>
+/**
+ * App shell that keeps the shared layout stable across routes.
+ *
+ * @state
+ * - appStore: used to bootstrap initial horse list data.
+ */
 import { onMounted } from 'vue'
 import HorseList from './components/HorseList.vue'
 import { useAppStore } from './stores/appStore'

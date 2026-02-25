@@ -1,4 +1,13 @@
 <script setup>
+/**
+ * Animated horse illustration with configurable color and size variant.
+ *
+ * @props
+ * - colorName: horse color key from constants.
+ * - size: visual size variant ('small' | 'large').
+ * @state
+ * - resolvedHex/horseStyleVars/horseContainerStyle: derived render styles.
+ */
 import { computed } from 'vue';
 import { HORSE_COLOR_MAP } from '../../constants/horseColors';
 
@@ -182,13 +191,7 @@ const handleHorseClick = () => {
 
 <style scoped>
 @charset "UTF-8";
-/*
-
-Click the horse for slow-mo :)
-
-*/
 .horse-animation {
-  /* Local size token so parent components can override safely. */
   font-size: var(--horse-size, 22vmin);
   --outlines: transparent;
   --speed: 0.8s;
@@ -252,11 +255,6 @@ label {
           animation-delay: var(--delay, 0s) !important;
 }
 
-/* ================
-
-   HEAD
-
-   ================ */
 .head {
   --part-width: 20%;
   --part-height: 15%;
@@ -370,11 +368,6 @@ label {
   --shape-rotate: -5deg;
 }
 
-/* ================
-
-   NECK
-
-   ================ */
 .neck {
   --part-width: 30%;
   --part-height: 25%;
@@ -442,11 +435,6 @@ label {
   --shape-radius: 50%;
 }
 
-/* ================
-
-   BODY
-
-   ================ */
 .body {
   --part-width: 55%;
   --part-height: 33%;
@@ -505,11 +493,6 @@ label {
   --shape-radius: 40% 50% 50%;
 }
 
-/* ================
-
-   TAIL
-
-   ================ */
 .tail {
   --part-width: 35%;
   --part-height: 18%;
@@ -581,11 +564,6 @@ label {
   --shape-height: 40%;
 }
 
-/* ================
-
-   FRONT LEG
-
-   ================ */
 .front-leg {
   --part-width: 15%;
   --part-height: 60%;
@@ -694,11 +672,6 @@ label {
   background-color: var(--color-hoof);
 }
 
-/* ================
-
-   BACK LEG
-
-   ================ */
 .back-leg {
   --part-width: 20%;
   --part-height: 70%;
@@ -821,11 +794,6 @@ label {
   background-color: var(--color-hoof);
 }
 
-/* ================
-
-   ANIMATIONS
-
-   ================ */
 @-webkit-keyframes body {
   0%, 100% {
     transform: rotate(8deg) translatex(2%) translatey(-5%);

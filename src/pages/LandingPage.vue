@@ -1,4 +1,10 @@
 <script setup>
+/**
+ * Entry page that introduces the app and routes into the game flow.
+ *
+ * @state
+ * - router: navigation handle for starting a new game.
+ */
 import HorseAnimation from '../components/atoms/HorseAnimation.vue'
 import CustomButton from '../components/atoms/CustomButton.vue'
 import { useRouter } from 'vue-router';
@@ -21,12 +27,15 @@ const startGame = () => {
 </template>
 
 <style scoped>
+section {
+  text-align: center;
+  overflow: hidden;
+}
+
 .horse-stage {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 70vh;
 }
-
-
 </style>

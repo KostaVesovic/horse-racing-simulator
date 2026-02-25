@@ -1,22 +1,41 @@
 <script setup>
+/**
+ * One race lane row with moving horse visuals and finish badge.
+ *
+ * @props
+ * - lane: lane runtime object (horse, progress, finishPosition).
+ * - isCountdownActive: disables transition while lanes reset.
+ * @state
+ * - normalizedProgress: clamped progress used for safe positioning.
+ */
 import { computed } from 'vue'
-import HorseAnimation from './HorseAnimation.vue'
+import HorseAnimation from './atoms/HorseAnimation.vue'
 
 const props = defineProps({
-	lane: {
-		type: Object,
-		required: true
-	},
-	isCountdownActive: {
-		type: Boolean,
-		default: false
-	}
+  lane: {
+    type: Object,
+    required: true,
+    validator: (lane) => {
+      return !!lane?.horse?.name &&
+        !!lane?.horse?.color &&
+        typeof lane?.progress === 'number'
+    }
+  },
+  isCountdownActive: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const normalizedProgress = computed(() => {
+  const progress = props.lane.progress
+  return Math.max(0, Math.min(1, progress))
 })
 
 const laneRunnerStyle = computed(() => ({
-	left: `${props.lane.progress * 100}%`,
-	transform: `translateX(-${props.lane.progress * 100}%)`,
-	transition: props.isCountdownActive ? 'none' : 'left 450ms linear, transform 450ms linear'
+  left: `${normalizedProgress.value * 100}%`,
+  transform: `translateX(-${normalizedProgress.value * 100}%)`,
+  transition: props.isCountdownActive ? 'none' : 'left 450ms linear, transform 450ms linear'
 }))
 </script>
 

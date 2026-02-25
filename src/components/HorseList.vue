@@ -1,4 +1,10 @@
 <script setup>
+/**
+ * Sidebar list showing all generated horses.
+ *
+ * @state
+ * - horses: reactive horse collection from the app store.
+ */
 import HorseListItem from './atoms/HorseListItem.vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
