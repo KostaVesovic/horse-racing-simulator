@@ -1,5 +1,6 @@
 <script setup>
-import HorseAnimation from '../components/HorseAnimation.vue'
+import HorseAnimation from '../components/atoms/HorseAnimation.vue'
+import CustomButton from '../components/atoms/CustomButton.vue'
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -10,12 +11,12 @@ const startGame = () => {
 </script>
 
 <template>
-  <section class="page">
+  <section>
     <h1>Horse Race Simulator</h1>
     <div class="horse-stage">
       <HorseAnimation color-name="olive" />
     </div>
-    <button @click="startGame">Generate Program</button>
+    <CustomButton @click="startGame">Generate Program</CustomButton>
   </section>
 </template>
 

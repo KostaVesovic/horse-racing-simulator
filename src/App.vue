@@ -23,7 +23,7 @@ onMounted(() => {
 
 <style scoped>
 .app-layout {
-  min-height: 100vh;
+  min-height: 100%;
   display: flex;
   background: #f5f5f4;
 }
@@ -38,7 +38,7 @@ onMounted(() => {
 .app-main {
   flex: 1;
   min-width: 0;
-  padding: 1.5rem;
+  padding: 24px;
 }
 
 @media (max-width: 900px) {
@@ -56,6 +56,12 @@ onMounted(() => {
 </style>
 
 <style>
+html,
+body,
+#app {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;

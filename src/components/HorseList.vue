@@ -1,5 +1,5 @@
 <script setup>
-import HorseListItem from './HorseListItem.vue'
+import HorseListItem from './atoms/HorseListItem.vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '../stores/appStore'
 
@@ -18,19 +18,24 @@ const { horses } = storeToRefs(appStore)
 
 <style scoped>
 .horse-list {
-  padding: 1rem;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .title {
-  margin: 0 0 1rem;
-  font-size: 1.1rem;
+  margin: 0 0 16px;
+  font-size: 17.6px;
+  font-weight: 700;
 }
 
 .list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>

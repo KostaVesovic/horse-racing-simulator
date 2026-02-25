@@ -1,11 +1,21 @@
 <script setup>
 import { computed } from 'vue';
-import { HORSE_COLOR_MAP } from '../constants/horseColors';
+import { HORSE_COLOR_MAP } from '../../constants/horseColors';
+
+const HORSE_SIZE_BY_VARIANT = {
+  small: '20px',
+  large: '120px'
+};
 
 const props = defineProps({
   colorName: {
     type: String,
     default: 'silver'
+  },
+  size: {
+    type: String,
+    default: 'large',
+    validator: (value) => value === 'small' || value === 'large'
   }
 });
 const emit = defineEmits(['horse-click']);
@@ -48,13 +58,20 @@ const horseStyleVars = computed(() => ({
   '--color-hoof': darkenHex(resolvedHex.value, 64)
 }));
 
+const horseContainerStyle = computed(() => {
+  return {
+    ...horseStyleVars.value,
+    '--horse-size': HORSE_SIZE_BY_VARIANT[props.size] ?? HORSE_SIZE_BY_VARIANT.large
+  };
+});
+
 const handleHorseClick = () => {
   emit('horse-click');
 };
 </script>
 
 <template>
-  <div class="horse-animation" :style="horseStyleVars">
+  <div class="horse-animation" :style="horseContainerStyle">
     <label for="toggle" @click="handleHorseClick">
 	<div class="horse animate bypass">
 		<div class="front-leg right">

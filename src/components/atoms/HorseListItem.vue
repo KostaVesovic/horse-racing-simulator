@@ -21,34 +21,34 @@ defineProps({
 .item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 9.6px;
   border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  padding: 7.2px 9.6px;
   background: #fafafa;
 }
 
 .swatch {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 13.6px;
+  height: 13.6px;
   border-radius: 9999px;
   border: 1px solid #d1d5db;
   flex-shrink: 0;
 }
 
 .name {
-  font-size: 0.92rem;
+  font-size: 14.72px;
   font-weight: 500;
 }
 
 .details {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 1.6px;
 }
 
 .condition {
-  font-size: 0.8rem;
+  font-size: 12.8px;
   color: #6b7280;
   justify-self: flex-end;
   margin-left: auto;
