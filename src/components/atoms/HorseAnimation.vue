@@ -27,7 +27,6 @@ const props = defineProps({
     validator: (value) => value === 'small' || value === 'large'
   }
 });
-const emit = defineEmits(['horse-click']);
 
 const clamp = (value) => Math.max(0, Math.min(255, value));
 
@@ -74,14 +73,11 @@ const horseContainerStyle = computed(() => {
   };
 });
 
-const handleHorseClick = () => {
-  emit('horse-click');
-};
 </script>
 
 <template>
   <div class="horse-animation" :style="horseContainerStyle">
-    <label for="toggle" @click="handleHorseClick">
+    <label for="toggle">
 	<div class="horse animate bypass">
 		<div class="front-leg right">
 			<div class="shoulder">

@@ -24,4 +24,12 @@ export default [
       'vue/multi-word-component-names': 'off',
     },
   },
+  {
+    files: ['**/*.test.{js,mjs,cjs}', '**/tests/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.vitest,
+      },
+    },
+  },
 ]

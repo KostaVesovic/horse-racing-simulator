@@ -46,10 +46,35 @@ npm run build
 npm run preview
 ```
 
+## Testing
+
+Unit tests are set up with Vitest + JSDOM and Vue Test Utils.
+
+### Run tests once
+
+```bash
+npm run test:run
+```
+
+### Run tests in watch mode
+
+```bash
+npm run test:watch
+```
+
+### Run Vitest interactive mode
+
+```bash
+npm run test
+```
+
 ## Scripts
 
 - `npm run dev` - start local dev server
 - `npm run build` - create production build
 - `npm run preview` - preview production build
+- `npm run test` - run Vitest interactive mode
+- `npm run test:run` - run Vitest once
+- `npm run test:watch` - run Vitest in watch mode
 - `npm run lint` - run ESLint
 - `npm run lint:fix` - auto-fix lint issues when possible
