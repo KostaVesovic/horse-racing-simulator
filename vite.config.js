@@ -7,6 +7,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    include: ['src/**/*.test.js'],
+    exclude: ['e2e/**', 'playwright-report/**', 'test-results/**'],
   },
   server: {
     host: true,
