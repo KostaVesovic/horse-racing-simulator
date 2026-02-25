@@ -56,7 +56,7 @@ onMounted(() => {
 <style scoped>
 .race-program {
   flex: 0 0 280px;
-  height: 100vh;
+  height: 90vh;
   overflow-y: auto;
   padding: 16px;
   box-sizing: border-box;
