@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host --open",
+    "dev:e2e": "vite --host --port 4173 --strictPort",
     "build": "vite build --mode production",
     "preview": "vite preview --host",
     "test": "vitest",
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
     "lint": "eslint . --ext .js,.vue --max-warnings 0",
     "lint:fix": "eslint . --ext .js,.vue --fix --max-warnings 0",
     "prepare": "husky"
@@ -21,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.3",
+    "@playwright/test": "^1.58.2",
     "@vitejs/plugin-vue": "^6.0.2",
     "@vue/test-utils": "^2.4.6",
     "eslint": "^9.39.3",

@@ -4,7 +4,7 @@ import globals from 'globals'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**'],
+    ignores: ['dist/**', 'node_modules/**', 'playwright-report/**', 'test-results/**'],
   },
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],

@@ -68,6 +68,43 @@ npm run test:watch
 npm run test
 ```
 
+### End-to-end tests (Playwright)
+
+Playwright e2e specs live in `e2e/` and cover the core user flows:
+
+- Landing -> Game navigation
+- Race controls (start / pause / resume)
+- Race completion -> Results -> Back to Start
+- Edge case: starting a new race while a race is already running
+
+Install Playwright browsers (first time only):
+
+```bash
+npx playwright install chromium
+```
+
+Run e2e tests:
+
+```bash
+npm run test:e2e
+```
+
+Run e2e tests in headed mode:
+
+```bash
+npm run test:e2e:headed
+```
+
+Run e2e tests with Playwright UI:
+
+```bash
+npm run test:e2e:ui
+```
+
+Notes:
+
+- The e2e suite speeds up race timing using a test-only runtime override injected by Playwright (`window.__E2E_RACE_TIMING__`).
+
 ## Scripts
 
 - `npm run dev` - start local dev server
@@ -76,5 +113,8 @@ npm run test
 - `npm run test` - run Vitest interactive mode
 - `npm run test:run` - run Vitest once
 - `npm run test:watch` - run Vitest in watch mode
+- `npm run test:e2e` - run Playwright e2e tests
+- `npm run test:e2e:headed` - run Playwright e2e tests with browser UI
+- `npm run test:e2e:ui` - open Playwright UI mode
 - `npm run lint` - run ESLint
 - `npm run lint:fix` - auto-fix lint issues when possible

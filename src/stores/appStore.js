@@ -14,11 +14,47 @@ import {
 
 const ROUND_DISTANCES = [1200, 1400, 1600, 1800, 2000, 2200]
 const HORSES_PER_ROUND = 10
-const TICK_MS = 300
-const NEXT_ROUND_DELAY_MS = 1500
 const DEFAULT_ROUND_INDEX = 0
+const DEFAULT_TICK_MS = 300
+const DEFAULT_NEXT_ROUND_DELAY_MS = 1500
+const DEFAULT_COUNTDOWN_START = 3
+const DEFAULT_COUNTDOWN_INTERVAL_MS = 1000
+
+// Guardrail for optional timing overrides used by e2e tests.
+const getTimingValue = (candidate, fallback, { min = 1 } = {}) => {
+  const parsedValue = Number(candidate)
+
+  if (!Number.isFinite(parsedValue) || parsedValue < min) {
+    return fallback
+  }
+
+  return parsedValue
+}
+
+const readRaceTimingConfig = () => {
+  // App runtime (including production) always falls back to defaults.
+  if (typeof globalThis === 'undefined') {
+    return {
+      tickMs: DEFAULT_TICK_MS,
+      nextRoundDelayMs: DEFAULT_NEXT_ROUND_DELAY_MS,
+      countdownStart: DEFAULT_COUNTDOWN_START,
+      countdownIntervalMs: DEFAULT_COUNTDOWN_INTERVAL_MS
+    }
+  }
+
+  const e2eConfig = globalThis.__E2E_RACE_TIMING__ ?? {}
+
+  return {
+    tickMs: getTimingValue(e2eConfig.tickMs, DEFAULT_TICK_MS),
+    nextRoundDelayMs: getTimingValue(e2eConfig.nextRoundDelayMs, DEFAULT_NEXT_ROUND_DELAY_MS),
+    countdownStart: getTimingValue(e2eConfig.countdownStart, DEFAULT_COUNTDOWN_START),
+    countdownIntervalMs: getTimingValue(e2eConfig.countdownIntervalMs, DEFAULT_COUNTDOWN_INTERVAL_MS)
+  }
+}
 
 export const useAppStore = defineStore('app', () => {
+  // E2E can inject __E2E_RACE_TIMING__ before app boot to speed up race cycles.
+  const timingConfig = readRaceTimingConfig()
   // Main race data used across pages.
   const horses = ref([])
   const raceSchedule = ref({
@@ -32,7 +68,7 @@ export const useAppStore = defineStore('app', () => {
   const isRunning = ref(false)
   const isPaused = ref(false)
   const isCountdownActive = ref(false)
-  const countdownValue = ref(3)
+  const countdownValue = ref(timingConfig.countdownStart)
   const raceCompleted = ref(false)
 
   let raceTimerId = null
@@ -78,7 +114,7 @@ export const useAppStore = defineStore('app', () => {
     isRunning.value = false
     isPaused.value = false
     isCountdownActive.value = false
-    countdownValue.value = 3
+    countdownValue.value = timingConfig.countdownStart
 
     if (resetCompletion) {
       raceCompleted.value = false
@@ -145,7 +181,7 @@ export const useAppStore = defineStore('app', () => {
 
     isRunning.value = true
     isPaused.value = false
-    raceTimerId = setInterval(runRoundTick, TICK_MS)
+    raceTimerId = setInterval(runRoundTick, timingConfig.tickMs)
   }
 
   // Wait, show countdown, then move into the next round.
@@ -167,7 +203,7 @@ export const useAppStore = defineStore('app', () => {
       prepareRoundLanes(nextRoundIndex)
 
       isCountdownActive.value = true
-      countdownValue.value = 3
+      countdownValue.value = timingConfig.countdownStart
 
       countdownTimerId = setInterval(() => {
         if (countdownValue.value > 1) {
@@ -178,8 +214,8 @@ export const useAppStore = defineStore('app', () => {
         clearCountdownTimer()
         isCountdownActive.value = false
         startRound()
-      }, 1000)
-    }, NEXT_ROUND_DELAY_MS)
+      }, timingConfig.countdownIntervalMs)
+    }, timingConfig.nextRoundDelayMs)
   }
 
   // Keep the same round rosters, but clear completion/results.

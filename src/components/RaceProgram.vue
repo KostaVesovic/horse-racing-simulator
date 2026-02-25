@@ -34,6 +34,7 @@ onMounted(() => {
         :key="round.round"
         class="round-card"
         :class="{ 'is-completed': round.isCompleted }"
+        :data-testid="round.isCompleted ? 'round-card-completed' : 'round-card'"
       >
         <header class="round-header">
           <h3>Round {{ round.round }}</h3>
@@ -44,7 +45,7 @@ onMounted(() => {
             <span class="swatch" :style="{ backgroundColor: horse.hex }" />
             <span class="name">{{ horse.name }}</span>
             <span class="condition">Condition: {{ horse.condition }}</span>
-            <span class="place">Place: {{ horse.finishPosition ?? '-' }}</span>
+            <span class="place" data-testid="round-place">Place: {{ horse.finishPosition ?? '-' }}</span>
           </li>
         </ul>
       </section>
